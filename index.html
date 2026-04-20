@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Material AI Image Studio</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
+  
+  <style>
+    /* Material 3 Expressive Design System */
+    :root {
+      --md-sys-color-primary: #006495;
+      --md-sys-color-on-primary: #ffffff;
+      --md-sys-color-primary-container: #cbe6ff;
+      --md-sys-color-on-primary-container: #001e30;
+      --md-sys-color-surface: #fdfcff;
+      --md-sys-color-on-surface: #1a1c1e;
+      --md-sys-color-surface-container: #eff1f4;
+      --md-sys-color-surface-container-high: #e3e6eb;
+      --border-radius-large: 28px;
+      --border-radius-extra-large: 32px;
+      --transition-standard: 0.4s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: var(--md-sys-color-surface);
+      color: var(--md-sys-color-on-surface);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* Header */
+    header {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 8px 16px;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Buttons */
+    .icon-btn {
+      background: var(--md-sys-color-surface-container-high);
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      color: var(--md-sys-color-on-surface);
+      transition: var(--transition-standard);
+    }
+
+    .icon-btn:hover {
+      background: var(--md-sys-color-primary-container);
+      transform: scale(1.1);
+    }
+
+    /* Main Content */
+    main {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Image Display Area (Expressive Radius) */
+    .image-card {
+      background-color: var(--md-sys-color-surface-container);
+      border-radius: var(--border-radius-extra-large);
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+
+    .image-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(1.05); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .placeholder-content {
+      text-align: center;
+      color: #8e9196;
+    }
+
+    .placeholder-content .material-symbols-rounded {
+      font-size: 80px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    /* Spinner */
+    .loader {
+      display: none;
+      width: 50px;
+      height: 50px;
+      border: 5px solid var(--md-sys-color-primary-container);
+      border-top: 5px solid var(--md-sys-color-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* Input Area */
+    .input-card {
+      background: var(--md-sys-color-surface-container);
+      border-radius: var(--border-radius-large);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      resize: none;
+      outline: none;
+      font-size: 1rem;
+      font-family: inherit;
+      color: var(--md-sys-color-on-surface);
+      height: 100px;
+      padding: 8px;
+    }
+
+    .footer-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-generate {
+      background-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+      border: none;
+      border-radius: 24px;
+      padding: 12px 28px;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: var(--transition-standard);
+      box-shadow: 0 4px 12px rgba(0,100,149,0.2);
+    }
+
+    .btn-generate:hover {
+      box-shadow: 0 8px 16px rgba(0,100,149,0.3);
+      transform: translateY(-2px);
+    }
+
+    .btn-generate:disabled {
+      background-color: #ccc;
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* Settings Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal.active { display: flex; }
+
+    .modal-content {
+      background: var(--md-sys-color-surface);
+      padding: 32px;
+      border-radius: var(--border-radius-large);
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    .modal-content h2 { margin-bottom: 16px; font-size: 1.2rem; }
+
+    input[type="password"] {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: 2px solid var(--md-sys-color-surface-container-high);
+      background: var(--md-sys-color-surface-container);
+      margin-bottom: 20px;
+      outline: none;
+    }
+
+    .btn-save {
+      width: 100%;
+      padding: 14px;
+      border-radius: 20px;
+      border: none;
+      background: var(--md-sys-color-primary);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1><span class="material-symbols-rounded">tempest</span> AI Studio</h1>
+    <button class="icon-btn" id="openSettings"><span class="material-symbols-rounded">settings</span></button>
+  </header>
+
+  <main>
+    <div class="image-card">
+      <div class="placeholder-content" id="placeholder">
+        <span class="material-symbols-rounded">image_search</span>
+        <p>指示を入力して生成を開始</p>
+      </div>
+      <div class="loader" id="loader"></div>
+      <img id="outputImg" alt="Generated by Gemini">
+    </div>
+
+    <div class="input-card">
+      <textarea id="promptInput" placeholder="生成したい画像の説明を英語で入力... (例: A neon cyberpunk cat in Tokyo)"></textarea>
+      <div class="footer-actions">
+        <button class="icon-btn" id="dlBtn" style="visibility: hidden;"><span class="material-symbols-rounded">download</span></button>
+        <button class="btn-generate" id="genBtn">
+          <span class="material-symbols-rounded">auto_awesome</span> 生成
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <h2>Google AI Studio APIキー</h2>
+      <p style="font-size: 0.8rem; margin-bottom: 12px; color: #666;">キーはブラウザのLocalStorageにのみ保存されます。</p>
+      <input type="password" id="keyInput" placeholder="AIzaSy...">
+      <button class="btn-save" id="saveBtn">保存</button>
+    </div>
+  </div>
+
+  <script>
+    const el = {
+      open: document.getElementById('openSettings'),
+      modal: document.getElementById('modal'),
+      save: document.getElementById('saveBtn'),
+      key: document.getElementById('keyInput'),
+      gen: document.getElementById('genBtn'),
+      prompt: document.getElementById('promptInput'),
+      img: document.getElementById('outputImg'),
+      ph: document.getElementById('placeholder'),
+      loader: document.getElementById('loader'),
+      dl: document.getElementById('dlBtn')
+    };
+
+    // 初期設定：キーがあるか確認
+    const storedKey = localStorage.getItem('gemini_api_key');
+    if (storedKey) el.key.value = storedKey;
+    else el.modal.classList.add('active');
+
+    el.open.onclick = () => el.modal.classList.add('active');
+    el.save.onclick = () => {
+      localStorage.setItem('gemini_api_key', el.key.value);
+      el.modal.classList.remove('active');
+    };
+
+    // 画像生成メイン処理
+    el.gen.onclick = async () => {
+      const apiKey = localStorage.getItem('gemini_api_key');
+      const prompt = el.prompt.value.trim();
+
+      if (!apiKey) return alert("APIキーを設定してください");
+      if (!prompt) return alert("プロンプトを入力してください");
+
+      // UIを「生成中」状態に
+      el.gen.disabled = true;
+      el.gen.innerText = "生成中...";
+      el.ph.style.display = "none";
+      el.img.style.display = "none";
+      el.loader.style.display = "block";
+      el.dl.style.visibility = "hidden";
+
+      try {
+        // Gemini Imagen 3 エンドポイント
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`;
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            instances: [{ prompt: prompt }],
+            parameters: { sampleCount: 1 }
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.error) throw new Error(data.error.message);
+
+        // Base64から画像URLを作成
+        const b64 = data.predictions[0].bytesBase64Encoded;
+        const finalUrl = `data:image/png;base64,${b64}`;
+
+        el.img.src = finalUrl;
+        el.img.style.display = "block";
+        el.dl.style.visibility = "visible";
+        el.dl.onclick = () => {
+          const a = document.createElement('a');
+          a.href = finalUrl;
+          a.download = "gemini-image.png";
+          a.click();
+        };
+
+      } catch (err) {
+        alert("エラー: " + err.message);
+        el.ph.style.display = "block";
+      } finally {
+        el.gen.disabled = false;
+        el.gen.innerHTML = '<span class="material-symbols-rounded">auto_awesome</span> 生成';
+        el.loader.style.display = "none";
+      }
+    };
+  </script>
+</body>
+</html>
